@@ -58,16 +58,14 @@ def parse_blosum(path):
     # You need to fill in the dictionaries in blosum_dict for each key AA (amino acid) with the corresponding
     # substitution scores between that AA and any other AA.
     # Use aas list to loop over all amino acids:
-    # for i in range(len(aas)):
+    for i in range(len(aas)):
         # Now loop over each score position for the AA with position i which are stored in the i-th list of aa_scores.
         # These are the BLOSUM62 scores between the AA with position i and the AA with position j:
-        # for j in range(...):
+        for j in range(len(aas)):
             # Get the score between the AA with position i and the AA with position j from aa_scores:
-            # score = ...
-
+            score = aa_scores[i][j]
             # For the dictionary of the i-th AA key of blosum_dict, store the j-th AA as a key and the score as a value:
-            # blosum_dict... = ...
-
+            blosum_dict[aas[i]][aas[j]] = score
     #########################
     ###  END CODING HERE  ###
     #########################
@@ -106,7 +104,8 @@ def parse_vep(path):
                 # Have a look at vars to see how AAs can be separated from the string and think
                 # which string method you could use.
                 # Append the retrieved reference and mutation amino acids to the respective lists
-
+                ref_aas.append(vars[0])
+                mut_aas.append(vars[2])
                 #########################
                 ###  END CODING HERE  ###
                 #########################
@@ -132,20 +131,12 @@ def run_baseline(hgvs_ids, ref_aas, mut_aas, blosum_dict):
     # We need to have access to each HGVS ID, reference AA, and mutation AA. These can be found in
     # hgvs_ids, ref_aas, and mut_aas, respectively. Note, these lists have the same length.
     # You can use the following loop:
-    # for i in range(len(hgvs_ids)):
-        # Get reference and mutation AAs from the corresponding lists
-        # ref_aa = ...
-        # mut_aa = ...
-
-        # Compute BLOSUM62 substitution score the reference AA and the mutation AA stored in blosum_dict
-        # score = ...
-
-        # Append the score to scores
-
+    for ref_aa, mut_aa in zip(ref_aas, mut_aas):
+        score = blosum_dict[ref_aa][mut_aa]
+        scores.append(score)
     #########################
     ###  END CODING HERE  ###
     #########################
-
     return scores
 
 def write_data(hgvs_ids, scores, out_filepath):
@@ -164,9 +155,6 @@ def write_data(hgvs_ids, scores, out_filepath):
         for id, score in zip(hgvs_ids, scores):
             # Write HGVS ID and the calculated score to the file with tab separation
             f.write(id + '\t' + score + '\n')
-
-        f.close()
-
 
 def main():
 
@@ -194,7 +182,6 @@ def main():
     scores = run_baseline(hgvs_ids, ref_aas, mut_aas, blosum_dict)
     # Write to a file
     write_data(hgvs_ids, scores, out_filepath)
-
 
 if __name__ == "__main__":
     main()
