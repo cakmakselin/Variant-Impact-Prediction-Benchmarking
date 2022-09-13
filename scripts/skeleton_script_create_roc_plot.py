@@ -20,6 +20,7 @@
 import numbers
 import os
 import sys
+import matplotlib
 import matplotlib.collections
 import matplotlib.pyplot
 import argparse
@@ -168,15 +169,17 @@ def calculate_coordinates(predictor_score_dict, benchmark_dict, out_filepath):
     # Use the following if-statement and replace the question mark with the type of the predictor.
     # It will put the ROC curve at the correct side of the diagonal line.
 
-    # if type_predictor == ? :
-    #     sorted_score_hgvs_pairs = sorted(score_hgvs_pairs)
-    # else:
-    #     sorted_score_hgvs_pairs = sorted(score_hgvs_pairs, reverse=True)
+    # is not was == in original code! But makes no sense.
+    # We want most deleterious mutations first, as we are starting form the (0, 0) coordinates.
+    # Therefore, we want the first values in our list to be the ones that are most likely to be deleterious.
 
+    if type_predictor != 'polyphen':
+        sorted_score_hgvs_pairs = sorted(score_hgvs_pairs)
+    else:
+        sorted_score_hgvs_pairs = sorted(score_hgvs_pairs, reverse=True)
     #########################
     ###  END CODING HERE  ###
     #########################
-
     # Later, each coordinate in the ROC plot will be associated with a predictor score (a threshold score). Thus, we
     # need a separate list for predictor scores
     coordinate_score = [sorted_score_hgvs_pairs[0][0]]
@@ -216,6 +219,12 @@ def calculate_coordinates(predictor_score_dict, benchmark_dict, out_filepath):
         # Determine whether the SNP is classified by the benchmark as:
         #    Pathogenic -> actual positive, thus a true positive (x-coordinate)
         #    Benign  -> actual negative, thus a false positive (y-coordinate)
+        # The comment above is incorrect right? Because true positive
+        # rate is on the y-axis and false positive rate on the x axis
+        if benchmark_dict[hgvs] == 'Pathogenic':
+            num_pathogenic += 1
+        elif benchmark_dict[hgvs] == 'Benign':
+            num_benign += 1
 
         # Increase the respective value of num_benign or num_pathogenic
 
@@ -224,11 +233,14 @@ def calculate_coordinates(predictor_score_dict, benchmark_dict, out_filepath):
         # to the corresponding lists: tpr is a list of y-coordinates and fpr is a list of x-coordinates.
         # Calculate the rates if HGVS score index i is the index of the score before a breakpoint
         # (use index_prebreakpoint_score). Also, append the score to coordinate_score.
-
-
+        if i in index_prebreakpoint_score:
+            tpr.append(num_pathogenic / total_pathogenic)
+            fpr.append(num_benign / total_benign)
+            coordinate_score.append(score)
         #########################
         ###  END CODING HERE  ###
         #########################
+
     if out_filepath:
         out_dir, out_filename = os.path.split(out_filepath)
         # Write coordinates to a .tsv file
@@ -254,14 +266,15 @@ def integrate(fpr, tpr):
         #########################
         ### START CODING HERE ###
         #########################
-        # Calculate AUC
-
+        delta_x = cur_fpr - last_fpr
+        delta_y = cur_tpr - last_tpr
+        area_trap = delta_x * last_tpr + (delta_x * delta_y)/2
+        auc += area_trap
         #########################
         ###  END CODING HERE  ###
         #########################
         last_fpr = cur_fpr
         last_tpr = cur_tpr
-
     return auc
 
 def roc_plot(tpr, fpr, coordinator_score, out_filepath, color = False):
