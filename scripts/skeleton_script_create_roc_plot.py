@@ -169,14 +169,15 @@ def calculate_coordinates(predictor_score_dict, benchmark_dict, out_filepath):
     # Use the following if-statement and replace the question mark with the type of the predictor.
     # It will put the ROC curve at the correct side of the diagonal line.
 
-    # is not was == in original code! But makes no sense.
+    # '!=' not was '==' in original code! But makes no sense.
     # We want most deleterious mutations first, as we are starting form the (0, 0) coordinates.
     # Therefore, we want the first values in our list to be the ones that are most likely to be deleterious.
-
+    # These are the highest values in the case of polyphen, and the lower values in the case of sift/baseline
     if type_predictor != 'polyphen':
         sorted_score_hgvs_pairs = sorted(score_hgvs_pairs)
     else:
         sorted_score_hgvs_pairs = sorted(score_hgvs_pairs, reverse=True)
+
     #########################
     ###  END CODING HERE  ###
     #########################
