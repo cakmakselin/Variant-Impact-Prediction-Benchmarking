@@ -56,7 +56,6 @@ def parse_predictor(filename):
         :param filename: a str with the predictor input file
         :return: a dict with HGVS IDs (keys), and the corresponding predictor scores (values)
     """
-
     global type_predictor
     if 'sift' in filename:
         type_predictor = 'sift'
@@ -294,9 +293,12 @@ def roc_plot(tpr, fpr, coordinator_score, out_filepath, color = False):
     # Draw ROC plot and write it to a file
     lw = 1
     figure, axes = matplotlib.pyplot.subplots(1, 1)
-
+    # matplotlib.pyplot.get_cmap('coolwarm').reversed()
     if color:
-        lc = colorline(fpr, tpr, coordinator_score, axes=axes)
+        if type_predictor != 'polyphen':
+            lc = colorline(fpr, tpr, coordinator_score, cmap=matplotlib.pyplot.get_cmap('coolwarm').reversed(), axes=axes)
+        else:
+            lc = colorline(fpr, tpr, coordinator_score, axes=axes)
         color_bar = figure.colorbar(lc)
         colorbar_legend = type_predictor + ' score'
         color_bar.ax.set_ylabel(colorbar_legend)
@@ -306,9 +308,14 @@ def roc_plot(tpr, fpr, coordinator_score, out_filepath, color = False):
     axes.plot((0, 1), (0, 1), '--', color='navy', lw=lw, linestyle='--', label='Random')
     axes.set_xlim([-0.008, 1.008])
     axes.set_ylim([-0.008, 1.008])
-    axes.set_xlabel('False Positive Rate')
-    axes.set_ylabel('True Positive Rate')
-    axes.set_title('AUC = %.3f' % auc)
+    axes.set_xlabel('False Positive Rate', fontsize=14)
+    axes.set_ylabel('True Positive Rate', fontsize=14)
+    if type_predictor == 'polyphen':
+        axes.set_title('ROC curve for PolyPhen-2 (AUC = %.3f)' % auc, fontsize=14)
+    if type_predictor == 'sift':
+        axes.set_title('ROC curve for SIFT (AUC = %.3f)' % auc, fontsize=14)
+    if type_predictor == 'BLOSUM':
+        axes.set_title('ROC curve for BLOSUM62 (AUC = %.3f)' % auc, fontsize=14)
     matplotlib.pyplot.savefig(out_filepath)
 
 def roc_plot_together(list_tpr, list_fpr, labels, out_filepath):
@@ -332,9 +339,10 @@ def roc_plot_together(list_tpr, list_fpr, labels, out_filepath):
     axes.plot((0, 1), (0, 1), '--', color='navy', lw=lw, linestyle='--', label='Random')
     axes.set_xlim([-0.008, 1.008])
     axes.set_ylim([-0.008, 1.008])
-    axes.legend()
-    axes.set_xlabel('False Positive Rate')
-    axes.set_ylabel('True Positive Rate')
+    axes.legend(fontsize=12)
+    axes.set_title('ROC curves for different predictors', fontsize=14)
+    axes.set_xlabel('False Positive Rate', fontsize=14)
+    axes.set_ylabel('True Positive Rate', fontsize=14)
     matplotlib.pyplot.savefig(out_filepath)
 
 def colorline(x, y, z=None, axes=None, cmap=matplotlib.pyplot.get_cmap('coolwarm'), linewidth=3, alpha=1.0, **kwargs):
@@ -410,6 +418,7 @@ def main():
         # Calculate ROC coordinates
         tpr, fpr, coordinate_score = calculate_coordinates(predictor_results, benchmark_results, out_filepath)
         # Draw and save the ROC plot
+
         roc_plot(tpr, fpr, coordinate_score, out_filepath, color)
 
     elif len(predictor_path) != 3:
@@ -427,7 +436,13 @@ def main():
             predictor_results = parse_predictor(predictor)
             benchmark_results = parse_benchmark(benchmark_path)
             # Append predictor type to the label list
-            labels.append(type_predictor)
+            if type_predictor == 'polyphen':
+                labels.append('PolyPhen-2')
+            elif type_predictor == 'sift':
+                labels.append('SIFT')
+            elif type_predictor == 'BLOSUM':
+                labels.append('BLOSUM62')
+
             # Calculate ROC coordinates
             tpr, fpr, coordinate_score = calculate_coordinates(predictor_results, benchmark_results, None)
             # Append coordinates to lists
