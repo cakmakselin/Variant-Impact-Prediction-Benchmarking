@@ -1,4 +1,6 @@
-# FoB-Project- This project is an introduction to the basic theory and practice of solving common problems
+# FoB-Project- 
+
+This project is an introduction to the basic theory and practice of solving common problems
 in bioinformatics. It is a masters group project at VU Amsterdam. 
 
 Nonsynonymous (missense) mutations occur where a single nucleotide in a DNA codon is
