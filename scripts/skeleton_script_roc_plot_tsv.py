@@ -77,23 +77,17 @@ def integrate(fpr, tpr):
         :param tpr: a list of tpr
         :return: a float with AUC
     """
-
     auc = 0.
     last_fpr = fpr[0]
     last_tpr = tpr[0]
-
     for cur_fpr, cur_tpr in list(zip(fpr, tpr))[1:]:
-        #########################
-        ### START CODING HERE ###
-        #########################
-        # Just copy and paste the code lines which you have completed in skeleton_script_create_roc_plot.py
-
-        #########################
-        ###  END CODING HERE  ###
-        #########################
+        # Trapezoidal area between points
+        delta_x = cur_fpr - last_fpr
+        delta_y = cur_tpr - last_tpr
+        area_trap = delta_x * last_tpr + (delta_x * delta_y)/2
+        auc += area_trap
         last_fpr = cur_fpr
         last_tpr = cur_tpr
-
     return auc
 
 def roc_plot_together(list_fpr, list_tpr, labels, out_filepath, title):
